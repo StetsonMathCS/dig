@@ -1,6 +1,13 @@
-(ns diglive.core)
+(ns diglive.core
+  (:require [ring.util.response :as response])
+  (:require [compojure.core :refer :all]
+            [compojure.handler :as handler]
+            [compojure.route :as route])
+  (:require [hiccup.core :refer :all]))
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(defroutes app-routes
+  (GET "/" [] "Hello, world!"))
+
+(def handler
+  (handler/site app-routes))
+
