@@ -23,6 +23,13 @@
   [id dumb?]
   (swap! votes update-in [id] (if dumb? inc dec)))
 
+(defn get-random-idea
+  []
+  (let [[idea1 idea2] (take 2 (shuffle (vals @ideas)))]
+    (if (or (< 0.25 (rand)) (nil? idea2))
+      idea1
+      (add-idea (:prefix idea1) (:suffix idea2)))))
+
 (defn render
   [& content]
   (html
@@ -60,6 +67,21 @@
        [:button.btn-primary.btn.btn-lg
         {:type "submit"} "This is dumb."]]]]]])
 
+(defn ask-if-dumb-idea
+  [idea]
+  [:div.jumbotron
+   [:h1.display-3 (format "%s %s." (:prefix idea) (:suffix idea))]
+   [:p.lead "Is this a dumb idea?"]
+   [:p.lead
+    [:form.form-inline {:action "/vote" :method "post"}
+     [:input {:type "hidden" :name "id" :value (:id idea)}]
+     [:div.form-group
+      [:button.btn-primary.btn.btn-lg
+       {:type "submit" :name "answer" :value "dumb"} "Dumb"]]
+     [:div.form-group.mx-3
+      [:button.btn-secondary.btn.btn-lg
+       {:type "submit" :name "answer" :value "notdumb"} "Not dumb"]]]]])
+
 (defn show-top-5
   []
   [:div
@@ -87,6 +109,14 @@
         (response/redirect "/"))
   (GET "/top" []
        (render (show-top-5)))
+  (GET "/vote" []
+       (render (let [idea (get-random-idea)]
+                 (ask-if-dumb-idea idea))))
+  (POST "/vote" [id answer]
+        (try
+          (process-vote (Long/parseLong id) (= answer "dumb"))
+          (catch Exception _))
+        (response/redirect "/top"))
   (route/not-found (render (heading "404"))))
 
 (def handler
