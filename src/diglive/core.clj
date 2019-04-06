@@ -42,12 +42,28 @@
   [txt]
   [:div.row.mt-5.mb-5 [:div.col [:h1.display-1.text-center txt]]])
 
+(defn show-top-5
+  []
+  [:div
+   (for [id (map first (take 5 (reverse (sort-by second (seq @votes)))))
+         :let [idea (get @ideas id)]]
+     [:div.row
+      [:div.col-12
+       [:h2.display-2.text-right (format "%s %s." (:prefix idea) (:suffix idea))]]])
+   [:div.fixed-bottom
+    [:div.col-12
+     [:p.text-center
+      [:a.btn.btn-primary.btn-lg
+       {:href "/" :role "button"} "That's dumb."]]]]])
+
 (defroutes app-routes
   (GET "/" []
        (process-vote (:id (add-idea "foo" "bar")) true)
        (prn "Ideas:" @ideas)
        (prn "Votes:" @votes)
        (render (heading "Hello, world!")))
+  (GET "/top" []
+       (render (show-top-5)))
   (route/not-found (render (heading "404"))))
 
 (def handler
