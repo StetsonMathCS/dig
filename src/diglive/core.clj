@@ -42,6 +42,24 @@
   [txt]
   [:div.row.mt-5.mb-5 [:div.col [:h1.display-1.text-center txt]]])
 
+(defn ask-prefix-suffix
+  []
+  [:div
+   (heading "Dumb Idea Generator")
+   [:div.jumbotron
+    [:h1.display-3 "What's a dumb idea?"]
+    [:p.lead
+     [:form.form-inline {:action "/new" :method "post"}
+      [:div.form-group
+       [:input.form-control.form-control-lg
+        {:type "text" :name "prefix" :placeholder "Shave all the"}]]
+      [:div.form-group.mx-3
+       [:input.form-control.form-control-lg
+        {:type "text" :name "suffix" :placeholder "cats"}]]
+      [:div.form-group.mx
+       [:button.btn-primary.btn.btn-lg
+        {:type "submit"} "This is dumb."]]]]]])
+
 (defn show-top-5
   []
   [:div
@@ -62,6 +80,11 @@
        (prn "Ideas:" @ideas)
        (prn "Votes:" @votes)
        (render (heading "Hello, world!")))
+  (GET "/new" []
+       (render (ask-prefix-suffix)))
+  (POST "/new" [prefix suffix]
+        (add-idea prefix suffix)
+        (response/redirect "/"))
   (GET "/top" []
        (render (show-top-5)))
   (route/not-found (render (heading "404"))))
