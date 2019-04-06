@@ -8,6 +8,21 @@
             [compojure.route :as route])
   (:require [hiccup.core :refer :all]))
 
+(def ideas (atom {})) ; keys are ids, values are ideas
+(def votes (atom {})) ; keys are ids, values are vote counts
+
+(defn add-idea
+  [prefix suffix]
+  (let [id (hash [prefix suffix])
+        idea {:id id :prefix prefix :suffix suffix}]
+    (swap! ideas assoc id idea)
+    (swap! votes assoc id 0)
+    idea))
+
+(defn process-vote
+  [id dumb?]
+  (swap! votes update-in [id] (if dumb? inc dec)))
+
 (defn render
   [& content]
   (html
@@ -28,7 +43,11 @@
   [:div.row.mt-5.mb-5 [:div.col [:h1.display-1.text-center txt]]])
 
 (defroutes app-routes
-  (GET "/" [] (render (heading "Hello, world!")))
+  (GET "/" []
+       (process-vote (:id (add-idea "foo" "bar")) true)
+       (prn "Ideas:" @ideas)
+       (prn "Votes:" @votes)
+       (render (heading "Hello, world!")))
   (route/not-found (render (heading "404"))))
 
 (def handler
